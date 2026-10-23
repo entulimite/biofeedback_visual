@@ -10,7 +10,6 @@
             margin: 0;
             padding: 0;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            /* Evita comportamientos extraños de zoom y selección en móviles */
             -webkit-user-select: none;
             user-select: none;
         }
@@ -54,7 +53,6 @@
             border: 1px solid #334155;
             width: 100%;
             aspect-ratio: 4 / 3;
-            /* Bloquea el scroll de la página al tocar el canvas */
             touch-action: none; 
         }
         canvas {
@@ -211,7 +209,7 @@
                 <button id="btnStop" onclick="stopTest()" disabled>Detener</button>
             </div>
 
-            <!-- Leyenda requerida antes del histórico / controles -->
+            <!-- Leyenda corporativa -->
             <div class="brand-footer">Powered by @entulimite Lab</div>
         </div>
     </div>
@@ -243,7 +241,6 @@
             errorHistory: []
         };
 
-        // Posición inicial del cursor/dedo al centro
         let gazeX = canvas.width / 2;
         let gazeY = canvas.height / 2;
 
@@ -257,21 +254,18 @@
             ctx.fillStyle = '#020617';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Anillo de tolerancia óptima
             ctx.beginPath();
             ctx.arc(target.x, target.y, 25, 0, Math.PI * 2);
             ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Target (Azul)
             ctx.beginPath();
             ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
             ctx.fillStyle = '#38bdf8';
             ctx.fill();
             ctx.closePath();
 
-            // Seguimiento del usuario (Verde)
             ctx.beginPath();
             ctx.arc(gazeX, gazeY, 9, 0, Math.PI * 2);
             ctx.fillStyle = '#22c55e';
@@ -321,10 +315,8 @@
             animationId = requestAnimationFrame(loop);
         }
 
-        // Manejadores unificados para Mouse y Touch Directo dentro del Canvas
         function handlePointerMove(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
-            // Escala las coordenadas reales de la pantalla táctil al tamaño interno del canvas (400x300)
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             
@@ -365,7 +357,6 @@
             isRunning = false;
             cancelAnimationFrame(animationId);
             
-            // Cálculo de Mediana y Moda del error al finalizar
             if (metrics.errorHistory.length > 0) {
                 const sorted = [...metrics.errorHistory].sort((a, b) => a - b);
                 const mid = Math.floor(sorted.length / 2);
