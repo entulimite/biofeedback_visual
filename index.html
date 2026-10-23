@@ -132,6 +132,33 @@
             text-align: center;
             color: #fbbf24;
         }
+        .results-box {
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: none;
+        }
+        .results-title {
+            color: #38bdf8;
+            font-weight: bold;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            color: #f8fafc;
+        }
+        .brand-footer {
+            font-size: 0.7rem;
+            text-align: center;
+            color: #64748b;
+            margin-top: 4px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -164,12 +191,28 @@
                 </div>
             </div>
 
+            <!-- Panel de Resultados Finales con Mediana y Moda -->
+            <div class="results-box" id="resultsPanel">
+                <div class="results-title">RESULTADOS FINALES</div>
+                <div class="result-row">
+                    <span>Mediana de error:</span>
+                    <strong id="lblMedian">0 px</strong>
+                </div>
+                <div class="result-row">
+                    <span>Moda de error:</span>
+                    <strong id="lblMode">0 px</strong>
+                </div>
+            </div>
+
             <div class="status-msg" id="lblStatus">Estado: Listo para iniciar</div>
 
             <div class="controls">
                 <button id="btnStart" onclick="startTest()">Iniciar</button>
                 <button id="btnStop" onclick="stopTest()" disabled>Detener</button>
             </div>
+
+            <!-- Leyenda requerida antes del histórico / controles -->
+            <div class="brand-footer">Powered by @entulimite Lab</div>
         </div>
     </div>
 
@@ -196,7 +239,8 @@
             optimalFrames: 0,
             cumulativeError: 0,
             initialErrorBlock: null,
-            finalErrorBlock: null
+            finalErrorBlock: null,
+            errorHistory: []
         };
 
         // Posición inicial del cursor/dedo al centro
@@ -242,6 +286,7 @@
 
             metrics.totalFrames++;
             metrics.cumulativeError += distance;
+            metrics.errorHistory.push(Math.round(distance));
 
             if (distance <= 25) {
                 metrics.optimalFrames++;
@@ -304,10 +349,11 @@
         }, { passive: true });
 
         function startTest() {
-            metrics = { totalFrames: 0, optimalFrames: 0, cumulativeError: 0, initialErrorBlock: null, finalErrorBlock: null };
+            metrics = { totalFrames: 0, optimalFrames: 0, cumulativeError: 0, initialErrorBlock: null, finalErrorBlock: null, errorHistory: [] };
             startTime = Date.now();
             isRunning = true;
             
+            document.getElementById('resultsPanel').style.display = 'none';
             document.getElementById('lblStatus').innerText = 'Estado: En ejecución...';
             document.getElementById('btnStart').disabled = true;
             document.getElementById('btnStop').disabled = false;
@@ -319,6 +365,28 @@
             isRunning = false;
             cancelAnimationFrame(animationId);
             
+            // Cálculo de Mediana y Moda del error al finalizar
+            if (metrics.errorHistory.length > 0) {
+                const sorted = [...metrics.errorHistory].sort((a, b) => a - b);
+                const mid = Math.floor(sorted.length / 2);
+                const median = sorted.length % 2 !== 0 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+
+                const frequency = {};
+                let maxFreq = 0;
+                let mode = sorted[0];
+                metrics.errorHistory.forEach(val => {
+                    frequency[val] = (frequency[val] || 0) + 1;
+                    if (frequency[val] > maxFreq) {
+                        maxFreq = frequency[val];
+                        mode = val;
+                    }
+                });
+
+                document.getElementById('lblMedian').innerText = median + ' px';
+                document.getElementById('lblMode').innerText = mode + ' px';
+                document.getElementById('resultsPanel').style.display = 'block';
+            }
+
             document.getElementById('lblStatus').innerText = 'Estado: Prueba finalizada';
             document.getElementById('btnStart').disabled = false;
             document.getElementById('btnStop').disabled = true;
